@@ -11,7 +11,10 @@ namespace ContractObjects
         [OperationContract(IsOneWay = true)]
         void PropagateChange(SynchronizedGame game);
 
-        //[OperationContract(IsOneWay = true)]
-        //void PropagateMessage(string message);
+        [OperationContract(IsOneWay = true)]
+        void PropagateServerMessage(string message);
+
+        [OperationContract(IsOneWay = true)]
+        void PropagateLobbyMessage(string message);
     }
 }

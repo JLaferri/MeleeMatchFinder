@@ -36,11 +36,11 @@ namespace ServerApplication
             return gameList.ToArray();
         }
 
-        public SynchronizedGame CreateGame(string dolphinVersion)
+        public SynchronizedGame CreateGame(string lobbyName, int playerLimit, DolphinOptions dolphinOptions)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IGameManagerCallback>();
 
-            var newGame = new SynchronizedGame(dolphinVersion);
+            var newGame = new SynchronizedGame(lobbyName, playerLimit, dolphinOptions);
             newGame.Players.Add(playerList[callback]);
 
             gameList.Add(newGame);
@@ -121,6 +121,30 @@ namespace ServerApplication
 
             //Remove all players that could not be contacted
             foreach (var keyToRemove in disconnectedPlayers) playerList.Remove(keyToRemove);
+        }
+
+
+        public void SendServerMessage(string message)
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IGameManagerCallback>();
+
+            var userName = playerList[callback].Name;
+            message = string.Format("{0} ({1}): {2}", userName, DateTime.Now.ToShortTimeString(), message);
+
+            var userCallbacks = playerList.Select(kvp => kvp.Key);
+            foreach (var userCallback in userCallbacks) userCallback.PropagateServerMessage(message);
+        }
+
+        public void SendLobbyMessage(string message, SynchronizedGame game)
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IGameManagerCallback>();
+
+            var userName = playerList[callback].Name;
+            message = string.Format("{0} ({1}): {2}", userName, DateTime.Now.ToShortTimeString(), message);
+
+            game = getGameByGuid(game.GameId);
+            var userCallbacks = playerList.Where(kvp => game.Players.Contains(kvp.Value)).Select(kvp => kvp.Key);
+            foreach (var userCallback in userCallbacks) userCallback.PropagateLobbyMessage(message);
         }
     }
 }

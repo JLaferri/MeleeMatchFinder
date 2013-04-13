@@ -34,5 +34,30 @@ namespace ClientApplication.View
             var settingsWindow = new SettingsWindow();
             settingsWindow.ShowDialog();
         }
+
+        private void CreateGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (ViewModel.MainViewModel)this.DataContext;
+
+            var configureWindow = new LobbyConfigurationWindow();
+            configureWindow.DataContext = viewModel;
+
+            var checkVal = configureWindow.ShowDialog();
+            if (checkVal == true)
+            {
+                viewModel.CreateGame.Execute(null);
+            }
+        }
+
+        private void ChatTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var textBox = (TextBox)sender;
+                var chatViewModel = (ViewModel.ChatViewModel)textBox.DataContext;
+
+                if (chatViewModel.SendMessage.CanExecute(null)) chatViewModel.SendMessage.Execute(null);
+            }
+        }
     }
 }

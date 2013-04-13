@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DolphinOptions.cs" />
     <Compile Include="IGameManagerCallback.cs" />
     <Compile Include="IGameManagerService.cs" />
     <Compile Include="PlayerInfo.cs" />

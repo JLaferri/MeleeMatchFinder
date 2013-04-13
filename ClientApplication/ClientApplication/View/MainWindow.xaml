@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lvm="clr-namespace:ClientApplication.ViewModel"
-        Title="MainWindow" Height="350" Width="800">
+        Title="Melee Game Finder" Height="500" Width="800">
     <Window.DataContext>
         <lvm:MainViewModel />
     </Window.DataContext>
@@ -42,14 +42,10 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="2*" />
-        </Grid.ColumnDefinitions>
 
-        <Menu Grid.Row="0" Grid.ColumnSpan="3" Height="23">
+        <Menu Grid.Row="0" Height="23">
             <MenuItem Header="File">
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click" />
             </MenuItem>
@@ -57,90 +53,192 @@
                 <MenuItem Header="Settings..." Click="SettingsMenuItem_Click" />
             </MenuItem>
         </Menu>
+        
+        <!-- Lobby Finding Area -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="1" Grid.Column="0" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
+            <Border Grid.Column="0" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
                 Style="{StaticResource DeactivateBorderWhenInLobby}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <TextBlock Margin="3" Grid.Row="0" Text="Server List" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+                    <TextBlock Margin="3" Grid.Row="0" Text="Server List" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
 
-                <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding ServerCollectionView}" IsSynchronizedWithCurrentItem="True"
+                    <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding ServerCollectionView}" IsSynchronizedWithCurrentItem="True"
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                <StackPanel Grid.Row="2">
-                    <Button Margin="3" Content="Add Server..." IsEnabled="False" />
-                </StackPanel>
-            </Grid>
-        </Border>
+                    <StackPanel Grid.Row="2">
+                        <Button Margin="3" Content="Add Server..." IsEnabled="False" />
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-        <Border Grid.Row="1" Grid.Column="1" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
+            <Border Grid.Column="1" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
                 Style="{StaticResource DeactivateBorderWhenInLobby}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <TextBlock Margin="3" Grid.Row="0" Text="Games In Server" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+                    <TextBlock Margin="3" Grid.Row="0" Text="Games In Server" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
 
-                <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding GameListView}" IsSynchronizedWithCurrentItem="True"
+                    <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding GameListView}" IsSynchronizedWithCurrentItem="True"
                           AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Player Count" Binding="{Binding Game.Players.Count}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Game.LobbyName}" />
+                            <DataGridTextColumn Header="Version" Binding="{Binding Game.Options.DolphinVersion}" />
+                            <DataGridTextColumn Header="FPS" Binding="{Binding Game.Options.FpsSelection}" />
+                            <DataGridTextColumn Header="CPU" Binding="{Binding Game.Options.CpuModeSelection}" />
+                            <DataGridTextColumn Header="Players" Binding="{Binding Game.Players.Count}" />
+                            <!--<DataGridTextColumn Header="Player Limit" Binding="{Binding Game.PlayerLimit}" />-->
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                <StackPanel Grid.Row="2">
-                    <Button Margin="3" Content="Join Game" Command="{Binding JoinGame}">
-                        <Button.Style>
-                            <Style TargetType="Button">
+                    <StackPanel Grid.Row="2">
+                        <Button Margin="3" Content="Join Game" Command="{Binding JoinGame}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding GameListView/}" Value="{x:Null}">
+                                            <Setter Property="IsEnabled" Value="false" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Margin="3" Content="Create Game" Click="CreateGameButton_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
+                Style="{StaticResource DeactivateBorderWhenNotInLobby}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Margin="3" Grid.Row="0" Text="Game Lobby" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+
+                    <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding CurrentGameLobby.Game.Players}" IsSynchronizedWithCurrentItem="True"
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                            <DataGridTextColumn Header="IP" Binding="{Binding PlayerIp}" />
+                            <DataGridTextColumn Header="Port" Binding="{Binding HostingPort}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2">
+                        <Button Margin="3" Content="Leave Lobby" Command="{Binding LeaveGame}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Chat Area Area -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
+                    DataContext="{Binding ServerChatViewModel}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Margin="3" Grid.Row="0" Text="Server Chat" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+                    
+                    <Border Grid.Row="1" Margin="3" BorderBrush="Gray" BorderThickness="2" SnapsToDevicePixels="True">
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding ChatView}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Background="White" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <DockPanel Grid.Row="2">
+                        <Button Margin="3" DockPanel.Dock="Right" Content="Send" Width="80" Command="{Binding SendMessage}"/>
+                        <TextBox Margin="3" Text="{Binding PendingInput, UpdateSourceTrigger=PropertyChanged}" MaxLength="250" KeyDown="ChatTextBox_KeyDown" />
+                    </DockPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
+                DataContext="{Binding LobbyChatViewModel}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Margin="3" Grid.Row="0" Text="Lobby Chat" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+
+                    <Border Grid.Row="1" Margin="3" BorderBrush="Gray" BorderThickness="2" SnapsToDevicePixels="True">
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding ChatView}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Background="White" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <DockPanel Grid.Row="2">
+                        <DockPanel.Style>
+                            <Style TargetType="DockPanel">
+                                <Setter Property="IsEnabled" Value="true" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding GameListView/}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=DataContext.CurrentGameLobby}" Value="{x:Null}">
                                         <Setter Property="IsEnabled" Value="false" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Margin="3" Content="Create Game" Command="{Binding CreateGame}" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="1" Grid.Column="2" Margin="3" BorderBrush="Black" BorderThickness="2" Background="LightGray" SnapsToDevicePixels="True"
-                Style="{StaticResource DeactivateBorderWhenNotInLobby}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Margin="3" Grid.Row="0" Text="Game Lobby" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
-
-                <DataGrid Margin="3" Grid.Row="1" ItemsSource="{Binding CurrentGameLobby.Game.Players}" IsSynchronizedWithCurrentItem="True"
-                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                        <DataGridTextColumn Header="IP" Binding="{Binding PlayerIp}" />
-                        <DataGridTextColumn Header="Port" Binding="{Binding HostingPort}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-
-                <StackPanel Grid.Row="2">
-                    <Button Margin="3" Content="Leave Lobby" Command="{Binding LeaveGame}" />
-                </StackPanel>
-            </Grid>
-        </Border>
+                        </DockPanel.Style>
+                        <Button Margin="3" DockPanel.Dock="Right" Content="Send" Width="80" Command="{Binding SendMessage}"/>
+                        <TextBox Margin="3" Text="{Binding PendingInput, UpdateSourceTrigger=PropertyChanged}" MaxLength="250" KeyDown="ChatTextBox_KeyDown" />
+                    </DockPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

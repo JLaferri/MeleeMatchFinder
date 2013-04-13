@@ -57,6 +57,11 @@ namespace ClientApplication.Common
             _execute = execute;
         }
 
+        public void RequeryCanExecute()
+        {
+            if (CanExecuteChanged != null) CanExecuteChanged(this, EventArgs.Empty);
+        }
+
         public bool CanExecute(object parameter)
         {
             return _canExecute();
@@ -66,7 +71,6 @@ namespace ClientApplication.Common
         {
             _execute();
         }
-
 
         public event EventHandler CanExecuteChanged;
     }
@@ -80,6 +84,11 @@ namespace ClientApplication.Common
         {
             _canExecute = canExecute;
             _execute = execute;
+        }
+
+        public void RequeryCanExecute()
+        {
+            if (CanExecuteChanged != null) CanExecuteChanged(this, EventArgs.Empty);
         }
 
         public bool CanExecute(object parameter)

@@ -1,0 +1,68 @@
+﻿<Window x:Class="ClientApplication.View.LobbyConfigurationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lv="clr-namespace:ClientApplication.View"
+        Title="Configure Lobby" Width="500" SizeToContent="Height" ResizeMode="NoResize" 
+        WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow">
+    <Window.Resources>
+        <Style x:Key="TextBoxInError" TargetType="TextBox">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors).CurrentItem.ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <StackPanel>
+            <GroupBox Header="Lobby Settings">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" Text="Name:" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="0" Grid.Column="1" Margin="3" Style="{StaticResource TextBoxInError}">
+                        <TextBox.Text>
+                            <Binding Path="CreateLobbySettings.LobbyName" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True" />
+                        </TextBox.Text>
+                    </TextBox>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" Text="Dolphin Version:" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="1" Grid.Column="1" Margin="3" Style="{StaticResource TextBoxInError}">
+                        <TextBox.Text>
+                            <Binding Path="CreateLobbySettings.DolphinVersion" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True" />
+                        </TextBox.Text>
+                    </TextBox>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Margin="3" Text="CPU Mode:" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="2" Grid.Column="1" Margin="3" ItemsSource="{Binding CreateLobbySettings.CpuModeOptions}" IsSynchronizedWithCurrentItem="True"
+                              DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding CreateLobbySettings.SelectedCpuMode}" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Margin="3" Text="FPS Mode:" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="3" Grid.Column="1" Margin="3" ItemsSource="{Binding CreateLobbySettings.FpsModeOptions}" IsSynchronizedWithCurrentItem="True"
+                              DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding CreateLobbySettings.SelectedFpsMode}" />
+                    
+                    <!--<TextBlock Grid.Row="4" Grid.Column="0" Margin="3" Text="Max Players:" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="4" Grid.Column="1" Margin="3" Style="{StaticResource TextBoxInError}">
+                        <TextBox.Text>
+                            <Binding Path="CreateLobbySettings.MaxPlayers" UpdateSourceTrigger="PropertyChanged"  ValidatesOnDataErrors="True" />
+                        </TextBox.Text>
+                    </TextBox>-->
+                </Grid>
+            </GroupBox>
+            <DockPanel>
+                <Button Margin="3" Content="Accept" Click="AcceptButton_Click" Width="100" HorizontalAlignment="Left" />
+                <Button Margin="3" Content="Close" Width="100" IsCancel="True" HorizontalAlignment="Right" />
+            </DockPanel>
+        </StackPanel>
+    </Grid>
+</Window>

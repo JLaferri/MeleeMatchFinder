@@ -14,7 +14,7 @@ namespace ContractObjects
         SynchronizedGame[] Connect(string name, int hostingPort);
 
         [OperationContract]
-        SynchronizedGame CreateGame(string dolphinVersion);
+        SynchronizedGame CreateGame(string lobbyName, int playerLimit, DolphinOptions dolphinOptions);
 
         [OperationContract]
         string JoinGame(SynchronizedGame game);
@@ -22,7 +22,10 @@ namespace ContractObjects
         [OperationContract]
         string LeaveGame(SynchronizedGame game);
 
-        //[OperationContract(IsOneWay = true)]
-        //void SendMessage(string message);
+        [OperationContract(IsOneWay = true)]
+        void SendServerMessage(string message);
+
+        [OperationContract(IsOneWay = true)]
+        void SendLobbyMessage(string message, SynchronizedGame game);
     }
 }

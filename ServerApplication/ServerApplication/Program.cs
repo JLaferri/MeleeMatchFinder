@@ -14,7 +14,7 @@ namespace ServerApplication
             var instance = new GameManagerService();
 
             ServiceHost svh = new ServiceHost(instance);
-            svh.AddServiceEndpoint(typeof(IGameManagerService), new NetTcpBinding(SecurityMode.None), "net.tcp://localhost:2626/GameManager");
+            svh.AddServiceEndpoint(typeof(IGameManagerService), new NetTcpBinding(SecurityMode.None), "net.tcp://localhost:58198/GameManager");
             svh.Open();
 
             Console.WriteLine("Server Started");

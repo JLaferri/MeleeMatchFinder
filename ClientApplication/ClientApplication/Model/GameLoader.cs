@@ -7,6 +7,8 @@ using ContractObjects;
 using System.ServiceModel;
 using ClientApplication.Properties;
 using ClientApplication.ViewModel;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
 
 namespace ClientApplication.Model
 {
@@ -15,6 +17,12 @@ namespace ClientApplication.Model
         public string ServerIp { get; private set;}
         public int ServerPort { get; private set; }
         public ObservableCollection<GameInfo> Games { get; private set; }
+
+        private readonly Subject<string> serverMessageNotifier = new Subject<string>();
+        private readonly Subject<string> lobbyMessageNotifier = new Subject<string>();
+
+        public IObservable<string> ServerMessageStream { get { return serverMessageNotifier.AsObservable(); } }
+        public IObservable<string> LobbyMessageStream { get { return lobbyMessageNotifier.AsObservable(); } }
 
         private IGameManagerService channel;
 
@@ -39,7 +47,7 @@ namespace ClientApplication.Model
             var binding = new NetTcpBinding(SecurityMode.None);
             var address = new EndpointAddress((new UriBuilder("net.tcp", ip, port, "GameManager")).Uri);
 
-            var callback = new GameInformationReceiver(Games);
+            var callback = new GameInformationReceiver(Games, serverMessageNotifier, lobbyMessageNotifier);
             channel = DuplexChannelFactory<IGameManagerService>.CreateChannel(callback, binding, address);
 
             //Attempt connection and game list retrieval
@@ -49,11 +57,14 @@ namespace ClientApplication.Model
             foreach (var game in gameList) Games.Add(new GameInfo(game));
         }
 
-        public GameInfo CreateGame()
+        public GameInfo CreateGame(LobbySettings settings)
         {
-            var createdGame = channel.CreateGame("abcd");
+            var dolphinOptions = new DolphinOptions(settings.SelectedFpsMode, settings.SelectedCpuMode, settings.DolphinVersion);
+
+            var createdGame = channel.CreateGame(settings.LobbyName, settings.MaxPlayers, dolphinOptions);
             GameInfo gameInfo;
 
+            //Wait for server to propagate the server back and find that object
             while ((gameInfo = Games.FirstOrDefault(gi => gi.Game.GameId == createdGame.GameId)) == null);
 
             return gameInfo;
@@ -67,6 +78,20 @@ namespace ClientApplication.Model
         public void LeaveGame(GameInfo game)
         {
             channel.LeaveGame(game.Game);
+        }
+
+        public void SendServerMessage(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            channel.SendServerMessage(message);
+        }
+
+        public void SendLobbyMessage(string message, GameInfo game)
+        {
+            if (string.IsNullOrWhiteSpace(message) || game == null) return;
+
+            channel.SendLobbyMessage(message, game.Game);
         }
 
         private void closeCurrentChannel()

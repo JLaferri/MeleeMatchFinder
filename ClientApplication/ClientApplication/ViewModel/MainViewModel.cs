@@ -10,6 +10,7 @@ using ClientApplication.Common;
 using ContractObjects;
 using ClientApplication.Model;
 using ClientApplication.Properties;
+using System.Reactive.Linq;
 
 namespace ClientApplication.ViewModel
 {
@@ -21,6 +22,11 @@ namespace ClientApplication.ViewModel
         public ICommand CreateGame { get; private set; }
         public ICommand JoinGame { get; private set; }
         public ICommand LeaveGame { get; private set; }
+
+        public ChatViewModel ServerChatViewModel { get; private set; }
+        public ChatViewModel LobbyChatViewModel { get; private set; }
+
+        public LobbySettings CreateLobbySettings { get; private set; }
 
         private bool _isBusy = false;
         public bool IsBusy { get { return _isBusy; } set { this.RaiseAndSetIfChanged("IsBusy", ref _isBusy, value, PropertyChanged); } }
@@ -41,10 +47,26 @@ namespace ClientApplication.ViewModel
             }
 
             var serverCollection = new ObservableCollection<ServerInfo>();
-            //serverCollection.Add(new ServerInfo("Fizzi's Test Server", "12.123.123.123", 1234));
+            serverCollection.Add(new ServerInfo("Fizzi's Test Server", "192.168.1.101", 58198));
 
             ServerCollectionView = CollectionViewSource.GetDefaultView(serverCollection);
             GameListView = CollectionViewSource.GetDefaultView(gameLoader.Games);
+
+            CreateLobbySettings = new LobbySettings();
+            CreateLobbySettings.LobbyName = "Lobby Name";
+            CreateLobbySettings.DolphinVersion = "3.5-1206";
+            CreateLobbySettings.MaxPlayers = 2;
+            CreateLobbySettings.SelectedCpuMode = CpuMode.Single;
+            CreateLobbySettings.SelectedFpsMode = FpsMode.FPS60;
+
+            ServerChatViewModel = new ChatViewModel(message => gameLoader.SendServerMessage(message));
+            LobbyChatViewModel = new ChatViewModel(message => gameLoader.SendLobbyMessage(message, CurrentGameLobby));
+
+            //Listen for server message observable to add chat messages
+            gameLoader.ServerMessageStream.ObserveOn(System.Threading.SynchronizationContext.Current).Subscribe(msg => ServerChatViewModel.MessageCollection.Add(msg));
+
+            //Listen for lobby message observable to add chat messages
+            gameLoader.LobbyMessageStream.ObserveOn(System.Threading.SynchronizationContext.Current).Subscribe(msg => LobbyChatViewModel.MessageCollection.Add(msg));
 
             ServerCollectionView.CurrentChanged += (sender, e) =>
             {
@@ -53,21 +75,27 @@ namespace ClientApplication.ViewModel
 
                 //Connect to server to enumerate the games it is managing
                 gameLoader.SwitchServer(selected.IpAddress, selected.Port);
+
+                //Write about the event in chat box
+                ServerChatViewModel.MessageCollection.Add(string.Format("<< CONNECTED TO SERVER \"{0}\" >>", selected.Name));
             };
 
-            //Set up Create Game button click event
+            //Set up Create Game command
             CreateGame = Command.CreateAsync(() => true, () =>
             {
-                var createdGame = gameLoader.CreateGame();
+                var createdGame = gameLoader.CreateGame(CreateLobbySettings);
 
                 CurrentGameLobby = createdGame;
             }, () => IsBusy = true, () => 
             {
+                //Write about event in lobby chat box
+                LobbyChatViewModel.MessageCollection.Add(string.Format("<< CONNECTED TO LOBBY \"{0}\" >>", CurrentGameLobby.Game.LobbyName));
+
                 GameListView.MoveCurrentTo(CurrentGameLobby);
                 IsBusy = false;
             });
 
-            //Set up Join Game button click event
+            //Set up Join Game command
             JoinGame = Command.CreateAsync(() => true, () =>
             {
                 var gameInfo = (GameInfo)GameListView.CurrentItem;
@@ -75,9 +103,15 @@ namespace ClientApplication.ViewModel
 
                 gameLoader.JoinGame(gameInfo);
                 CurrentGameLobby = gameInfo;
-            }, () => IsBusy = true, () => IsBusy = false);
+            }, () => IsBusy = true, () =>
+            {
+                //Write about event in lobby chat box
+                LobbyChatViewModel.MessageCollection.Add(string.Format("<< CONNECTED TO LOBBY \"{0}\" >>", CurrentGameLobby.Game.LobbyName));
 
-            //Set up Leave Game button click event
+                IsBusy = false;
+            });
+
+            //Set up Leave Game command
             LeaveGame = Command.CreateAsync(() => true, () =>
             {
                 var gameInfo = CurrentGameLobby;
@@ -85,7 +119,13 @@ namespace ClientApplication.ViewModel
 
                 gameLoader.LeaveGame(gameInfo);
                 CurrentGameLobby = null;
-            }, () => IsBusy = true, () => IsBusy = false);
+            }, () => IsBusy = true, () =>
+            {
+                //Write about event in lobby chat box
+                LobbyChatViewModel.MessageCollection.Add("<< DISCONNECTED FROM LOBBY >>");
+
+                IsBusy = false;
+            });
         }
 
         public void Dispose()

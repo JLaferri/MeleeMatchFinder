@@ -34,6 +34,11 @@ namespace ClientApplication.Common
             _onError = onError;
         }
 
+        public void RequeryCanExecute()
+        {
+            if (CanExecuteChanged != null) CanExecuteChanged(this, EventArgs.Empty);
+        }
+
         public bool CanExecute(object parameter)
         {
             return _canExecute();
@@ -54,7 +59,6 @@ namespace ClientApplication.Common
                 if (_onCompletion != null) _onCompletion();
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
 
         public event EventHandler CanExecuteChanged;
     }
@@ -86,6 +90,11 @@ namespace ClientApplication.Common
             _onError = onError;
         }
 
+        public void RequeryCanExecute()
+        {
+            if (CanExecuteChanged != null) CanExecuteChanged(this, EventArgs.Empty);
+        }
+
         public bool CanExecute(object parameter)
         {
             TIn input;
@@ -112,7 +121,6 @@ namespace ClientApplication.Common
                 if (_onCompletion != null) _onCompletion(input);
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
 
         public event EventHandler CanExecuteChanged;
     }

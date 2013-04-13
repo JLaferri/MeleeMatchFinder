@@ -12,18 +12,28 @@ namespace ContractObjects
     {
         [DataMember]
         public Guid GameId { get; private set; }
+
+        [DataMember]
+        public string LobbyName { get; private set; }
+
+        [DataMember]
+        public int PlayerLimit { get; private set; }
+
+        [DataMember]
+        public DolphinOptions Options { get; private set; }
+
         [DataMember]
         public ObservableCollection<PlayerInfo> Players { get; set; }
-        [DataMember]
-        public string DolphinVersion { get; set; }
 
-        public SynchronizedGame(string dolphinVersion)
+        public SynchronizedGame(string lobbyName, int playerLimit, DolphinOptions options)
         {
             GameId = Guid.NewGuid();
 
             Players = new ObservableCollection<PlayerInfo>();
 
-            DolphinVersion = dolphinVersion;
+            LobbyName = lobbyName;
+            PlayerLimit = playerLimit;
+            Options = options;
         }
     }
 }

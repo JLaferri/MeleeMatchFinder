@@ -31,7 +31,7 @@ namespace ClientApplication.View
 
             Settings.Default.Save();
 
-            MessageBox.Show("Settings successfully saved.");
+            MessageBox.Show("If no input boxes are surrounded in red, all settings were successfully saved.");
         }
 
         private static void updateBindingSources(DependencyObject obj, params DependencyProperty[] properties)
