@@ -13,8 +13,12 @@ namespace ServerApplication
         {
             var instance = new GameManagerService();
 
+            var binding = new NetTcpBinding(SecurityMode.None);
+            binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.SendTimeout = TimeSpan.MaxValue;
+
             ServiceHost svh = new ServiceHost(instance);
-            svh.AddServiceEndpoint(typeof(IGameManagerService), new NetTcpBinding(SecurityMode.None), "net.tcp://localhost:58198/GameManager");
+            svh.AddServiceEndpoint(typeof(IGameManagerService), binding, "net.tcp://localhost:2626/GameManager");
             svh.Open();
 
             Console.WriteLine("Server Started");

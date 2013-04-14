@@ -31,20 +31,25 @@ namespace ClientApplication.Model
             Games = new ObservableCollection<GameInfo>();
         }
 
-        public void SwitchServer(string ip, int port)
+        public void DisconnectFromServer()
         {
-            //Do nothing if information not new
-            if (ip == ServerIp && port == ServerPort) return;
-
             Games.Clear();
+
+            closeCurrentChannel();
+        }
+
+        public void ConnectToServer(string ip, int port)
+        {
+            if (string.IsNullOrWhiteSpace(ip) || port < 0) return;
 
             ServerIp = ip;
             ServerPort = port;
-
-            closeCurrentChannel();
             
             //Connect to new server and store channel
             var binding = new NetTcpBinding(SecurityMode.None);
+            binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.SendTimeout = TimeSpan.MaxValue;
+
             var address = new EndpointAddress((new UriBuilder("net.tcp", ip, port, "GameManager")).Uri);
 
             var callback = new GameInformationReceiver(Games, serverMessageNotifier, lobbyMessageNotifier);

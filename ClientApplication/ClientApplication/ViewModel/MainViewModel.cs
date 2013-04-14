@@ -11,6 +11,8 @@ using ContractObjects;
 using ClientApplication.Model;
 using ClientApplication.Properties;
 using System.Reactive.Linq;
+using System.ServiceModel;
+using System.Windows;
 
 namespace ClientApplication.ViewModel
 {
@@ -18,6 +20,9 @@ namespace ClientApplication.ViewModel
     {
         public ICollectionView ServerCollectionView { get; private set; }
         public ICollectionView GameListView { get; private set; }
+
+        public ICommand ConnectToServer { get; private set; }
+        public ICommand DisconnectFromServer { get; private set; }
 
         public ICommand CreateGame { get; private set; }
         public ICommand JoinGame { get; private set; }
@@ -34,6 +39,9 @@ namespace ClientApplication.ViewModel
         private GameInfo _currentGameLobby = null;
         public GameInfo CurrentGameLobby { get { return _currentGameLobby; } set { this.RaiseAndSetIfChanged("CurrentGameLobby", ref _currentGameLobby, value, PropertyChanged); } }
 
+        private ServerInfo _currentServer = null;
+        public ServerInfo CurrentServer { get { return _currentServer; } set { this.RaiseAndSetIfChanged("CurrentServer", ref _currentServer, value, PropertyChanged); } }
+
         private readonly GameLoader gameLoader = new GameLoader();
 
         public MainViewModel()
@@ -47,7 +55,7 @@ namespace ClientApplication.ViewModel
             }
 
             var serverCollection = new ObservableCollection<ServerInfo>();
-            serverCollection.Add(new ServerInfo("Fizzi's Test Server", "192.168.1.101", 58198));
+            serverCollection.Add(new ServerInfo("Fizzi's Test Server", "192.168.1.101", 2626));
 
             ServerCollectionView = CollectionViewSource.GetDefaultView(serverCollection);
             GameListView = CollectionViewSource.GetDefaultView(gameLoader.Games);
@@ -68,17 +76,42 @@ namespace ClientApplication.ViewModel
             //Listen for lobby message observable to add chat messages
             gameLoader.LobbyMessageStream.ObserveOn(System.Threading.SynchronizationContext.Current).Subscribe(msg => LobbyChatViewModel.MessageCollection.Add(msg));
 
-            ServerCollectionView.CurrentChanged += (sender, e) =>
+            //Set up connect to server command
+            ConnectToServer = Command.Create(() => true, () =>
             {
-                var selected = (ServerInfo)ServerCollectionView.CurrentItem;
-                if (selected == null) return;
+                try
+                {
+                    var selected = (ServerInfo)ServerCollectionView.CurrentItem;
+                    if (selected == null) return;
 
+                    //Connect to server to enumerate the games it is managing
+                    gameLoader.ConnectToServer(selected.IpAddress, selected.Port);
+                    CurrentServer = selected;
+
+                    //Write about the event in chat box
+                    ServerChatViewModel.MessageCollection.Add(string.Format("<< CONNECTED TO SERVER \"{0}\" >>", selected.Name));
+                }
+                catch (Exception ex)
+                {
+                    if (ex is CommunicationException || ex is TimeoutException)
+                    {
+                        //Normally I would not launch a message box from a view model but I'm still in lazy mode for programming this application
+                        MessageBox.Show(ex.Message, "Error Connecting", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    else throw;
+                }
+            });
+
+            //Set up disconnect from server command
+            DisconnectFromServer = Command.Create(() => true, () =>
+            {
                 //Connect to server to enumerate the games it is managing
-                gameLoader.SwitchServer(selected.IpAddress, selected.Port);
+                gameLoader.DisconnectFromServer();
+                CurrentServer = null;
 
                 //Write about the event in chat box
-                ServerChatViewModel.MessageCollection.Add(string.Format("<< CONNECTED TO SERVER \"{0}\" >>", selected.Name));
-            };
+                ServerChatViewModel.MessageCollection.Add("<< DISCONNECTED FROM SERVER >>");
+            });
 
             //Set up Create Game command
             CreateGame = Command.CreateAsync(() => true, () =>

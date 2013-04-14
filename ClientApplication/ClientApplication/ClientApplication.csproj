@@ -70,6 +70,7 @@
     </ApplicationDefinition>
     <Compile Include="ViewModel\ChatViewModel.cs" />
     <Compile Include="ViewModel\LobbySettings.cs" />
+    <Compile Include="View\Converters.cs" />
     <Compile Include="View\LobbyConfigurationWindow.xaml.cs">
       <DependentUpon>LobbyConfigurationWindow.xaml</DependentUpon>
     </Compile>

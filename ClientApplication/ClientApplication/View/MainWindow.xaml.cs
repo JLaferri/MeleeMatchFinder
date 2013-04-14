@@ -22,6 +22,18 @@ namespace ClientApplication.View
         public MainWindow()
         {
             InitializeComponent();
+
+            var viewModel = (ViewModel.MainViewModel)this.DataContext;
+
+            viewModel.LobbyChatViewModel.ChatView.CollectionChanged += (sender, e) =>
+            {
+                LobbyChatScrollViewer.ScrollToBottom();
+            };
+
+            viewModel.ServerChatViewModel.ChatView.CollectionChanged += (sender, e) =>
+            {
+                ServerChatScrollViewer.ScrollToBottom();
+            };
         }
 
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)

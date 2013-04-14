@@ -31,7 +31,8 @@ namespace ClientApplication.View
 
             Settings.Default.Save();
 
-            MessageBox.Show("If no input boxes are surrounded in red, all settings were successfully saved.");
+            MessageBox.Show("If no input boxes are surrounded in red, all settings were successfully saved. If you are connected to a server, you will have to reconnect " +
+                "for the changes to take effect.");
         }
 
         private static void updateBindingSources(DependencyObject obj, params DependencyProperty[] properties)
